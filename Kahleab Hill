@@ -1,0 +1,135 @@
+Question 1
+select SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+GROUP BY stat_cd;
+
+Question 2
+SELECT MAX(trans_ammt), MIN(trans_ammt)
+FROM cards_ingest.trans_fact
+GROUP BY stat_cd, tran_date;
+
+Question 3
+SELECT SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+HAVING SUM(trans_ammt) > 10000;
+
+Question 4
+SELECT SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+GROUP BY stat_cd
+HAVING SUM(trans_ammt) > 10000;
+
+Question 5
+SELECT SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+GROUP BY stat_cd
+HAVING SUM(trans_ammt) > 10000;
+
+Question 6
+SELECT SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+WHERE cust_id = 'cust_104'
+GROUP BY stat_cd
+HAVING SUM(trans_ammt) > 10000;
+
+Question 7
+SELECT SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+CASE
+    WHEN stat_cd = NULL THEN stat_cd = 'TX'
+    END
+GROUP BY stat_cd
+HAVING SUM(trans_ammt) > 10000;
+
+Question 8
+SELECT stat_cd
+FROM cards_ingest.trans_fact
+CASE
+    WHEN stat_cd = NULL THEN stat_cd = 'missing data'
+    ELSE stat_cd = 'good data'
+    END;
+    
+Question 9
+SELECT stat_cd
+FROM cards_ingest.trans_fact
+CASE
+    WHEN stat_cd = NULL AND cust_id = 'cust_104' THEN stat_cd = 'TX'
+    ELSE stat_cd = 'CA'
+    END;
+GROUP BY stat_cd;
+
+JOIN Questions
+
+Quesstion 1
+SELECT cards_ingest.trans_fact
+FROM cards_ingest.trans_fact
+LEFT JOIN cards_ingest.cust_dim_details
+
+
+Question 2
+SELECT SUM(trans_fact)
+FROM cards_ingest.trans_fact
+INNER JOIN cards_ingest.cust_dim_details
+ON  cards_ingest.trans_fact.stat_cd = cards_ingest.cust_dim_details.state_cd
+GROUP BY zip_cd
+
+Question 3
+SELECT cust_first_name, cust_last_name
+RANK() OVER(PARTITION BY SUM(trans_ammt) ORDER BY SUM(trans_ammt))RANK
+FROM cards_ingest.cust_dim_details
+INNER JOIN cards_ingest.trans_fact
+ON cards_ingest.cust_dim_details.cust_id = cards_ingest.trans_fact.cust_id
+
+
+
+
+
+
+Added Weekend questions
+
+PART 1
+
+Question 1
+SELECT tran_date, tran_ammt, SUM(trans_ammt)
+FROM cards_ingest.trans_fact
+GROUP BY tran_date
+
+Question 2
+SELECT tran_date, tran_ammt, SUM(trans_ammt)
+RANK()OVER(PARATITION BY tran_ammt ORDER BY tran_date)RANK
+FROM cards_ingest.trans_fact
+ORDER BY tran_date DESC
+
+Question 3
+SELECT *FROM cards_ingest.trans_fact, SUM(tran_ammt)
+RANK() OVER(PARTITION BY tran_ammt ORDER BY tran_date)RANK
+ORDER BY tran_date DESC
+
+Part 2
+
+Question 1
+SELECT *FROM cards_ingest.trans_fact
+INNER JOIN cards_ingest.cust_dim_details
+ON cards_ingest.trans_fact.cust_id = cards_ingest.cust_dim_details.cust_id
+GROUP BY start_date, end_date
+
+Question 2
+SELECT *FROM cards_ingest.trans_fact, SUM(trans_fact)
+RANK() OVER(PARTITION BY tran_ammt ORDER BY tran_ammt)RANK
+ORDER BY tran_ammt DESC
+INNER JOIN cards_ingest.cust_dim_details
+ON cards_ingest.trans_fact.cust_id = cards_ingest.cust_dim_details.cust_id
+GROUP BY start_date, end_date
+
+Question 3
+SELECT *FROM cards_ingest.trans_fact, SUM(trans_fact)
+RANK() OVER(PARTITION BY tran_ammt ORDER BY tran_ammt)RANK
+ORDER BY tran_ammt DESC
+INNER JOIN cards_ingest.cust_dim_details
+ON cards_ingest.trans_fact.cust_id = cards_ingest.cust_dim_details.cust_id
+CASE
+    WHEN cards_ingest.trans_fact.stat_cd != cards_ingest.cust_dim_details.state_id THEN cards_ingest.trans_fact.stat_cd = 'data issues'
+    ELSE cards_ingest.trans_fact.stat_cd = 'good data'
+GROUP BY start_date, end_date
+
+
