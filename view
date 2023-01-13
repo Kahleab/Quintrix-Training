@@ -1,0 +1,5 @@
+CREATE VIEW order_product_cost as
+
+SELECT customer.*, product_cost.manufacturingcost FROM product_cost
+JOIN customer
+ON product_cost.product_name = customer.product_name;
