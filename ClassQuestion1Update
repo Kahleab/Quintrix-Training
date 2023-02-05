@@ -1,0 +1,70 @@
+aws s3 cp s3://kahleabbucket/tran_data_20230101.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-01'/
+
+aws s3 cp s3://kahleabbucket/tran_data_20230102.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-02'/
+
+aws s3 cp s3://kahleabbucket/tran_data_20230103.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-03'/
+
+aws s3 cp s3://kahleabbucket/tran_data_20230104.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-04'/
+
+aws s3 cp s3://kahleabbucket/tran_data_20230105.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-05'/
+
+aws s3 cp s3://kahleabbucket/tran_data_20230106.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-06'/
+
+aws s3 cp s3://kahleabbucket/tran_data_20230107.csv s3://kahleabbucket/data/src_customer/cust_tran_fact/dataset_date='2022-01-07'/
+
+
+
+ 
+aws s3 copy: s3://kahleabbucket/tran_data_20230101.csv to s3://kahleabbucket/data/src_customer/cust_tran_fact/load_date=2022-01-01/tran_data_20230101.csv
+
+
+create table if not exists customer_details_source_partitions
+(
+account_id varchar(50),
+account_open_dt varchar(50),
+account_id_type varchar(10),
+acct_hldr_primary_addr_state varchar(20),
+acct_hldr_primary_addr_zip_cd varchar(20),
+acct_hldr_first_name varchar(20),
+acct_hldr_last_name varchar(20),
+dataset_date varchar(50))
+partitioned by (dataset_date varchar(10))
+row format delimited fields terminated by ','
+location "s3://kahleabbucket/data/src_customer/customer_details_source_partitions/"
+tblproperties ("skip.header.line.count"="1") ;
+
+
+
+create table if not exists table_states
+(
+database_name varchar(20),
+table_name varchar (20),
+partition_key varchar(30),
+rec_count int,
+load_date date,
+execution_key varchar(100))
+execution_key is (database_name + "-" + table_name + "-" + partition_key)
+row format delimited fields terminated by ','
+location "s3://kahleabbucket/data/src_customer/table_states/"
+tblproperties("skip.header.line.count"-"1");
+
+
+create table if not exists table_states
+(
+database_name varchar(20),
+table_name varchar (20),
+partition_key varchar(30),
+rec_count int,
+load_date date,
+execution_key varchar(100))
+location "s3://kahleabbucket/data/src_customer/table_states/";
+
+create table if not exists transaction_fact
+(
+tran_id varchar(50),
+cust_id varchar(50),
+tran_date date,
+tran_ammount int,
+tran_type varchar(50))
+stored as parquet
+TBLPROPERTIES ("parquet.compression"="SNAPPY");
