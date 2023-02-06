@@ -57,6 +57,14 @@ stored as parquet
 location "s3://kahleabbucket/data/src_customer/cust_tran_fact/";
 
 
+--INSERT DATA into transaction_fact
+
+SELECT *
+INTO transaction_fact
+FROM tran_data_20230101
+
+
+
 1)
 SELECT DISTINCT tran_id FROM transaction_fact
 
