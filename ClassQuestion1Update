@@ -35,29 +35,7 @@ tblproperties ("skip.header.line.count"="1") ;
 
 
 
-create table if not exists table_states
-(
-database_name varchar(20),
-table_name varchar (20),
-partition_key varchar(30),
-rec_count int,
-load_date date,
-execution_key varchar(100))
-execution_key is (database_name + "-" + table_name + "-" + partition_key)
-row format delimited fields terminated by ','
-location "s3://kahleabbucket/data/src_customer/table_states/"
-tblproperties("skip.header.line.count"-"1");
 
-
-create table if not exists table_states
-(
-database_name varchar(20),
-table_name varchar (20),
-partition_key varchar(30),
-rec_count int,
-load_date date,
-execution_key varchar(100))
-location "s3://kahleabbucket/data/src_customer/table_states/";
 
 create table if not exists transaction_fact
 (
@@ -68,3 +46,36 @@ tran_ammount int,
 tran_type varchar(50))
 stored as parquet
 TBLPROPERTIES ("parquet.compression"="SNAPPY");
+
+
+create table if not exists table_states (
+load_date date,
+rec_count int
+)
+partitioned by (database_name varchar(20), table_name varchar(50),  partition_key varchar(30) )
+stored as parquet
+location "s3://kahleabbucket/data/src_customer/cust_tran_fact/";
+
+
+1)
+SELECT DISTINCT tran_id FROM transaction_fact
+
+2)
+
+
+
+3)
+SELECT SUM tran_ammount
+GROUP BY cust_id, tran_date
+FROM transaction_fact
+
+4)
+SELECT tran_id COUNT(*)
+FROM transaction_fact
+GROUP BY tran_id
+HAVING COUNT(*) > 1
+
+5) 
+SELECT DISTINCT tran_id
+WHERE tran_type = 'D'
+FROM transaction_fact
