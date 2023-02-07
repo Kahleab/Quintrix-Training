@@ -1,0 +1,9 @@
+
+Static partition are created with the LOAD command. When using static partitions the number of partitions is manually decided. 
+
+
+Dynamic partiton is used with the INSERT command to create multiple partitions.Partitions are created automatically.
+
+
+A hive query gets converted into a sequence of stages. The stages can be MapReduce,MetaStore, or HDFS.
+The explain output's three parts are: The Abstract syntax tree, the dependencies between the stages of the plan, and the description the three stages.
