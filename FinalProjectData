@@ -24,7 +24,7 @@ def generate_dummy_info(record_count):
 
     for i in range(0, record_count):
         quote_id = (random.randint(100000,999999))
-        snapshot_time = random_date(start_date,end_date)+ " " (random.randint(1,12)) 
+        snapshot_time = (random_date(start_date,end_date))
         first_name = random.choice(f_name_cho)
         last_name = random.choice(l_name_cho)
         state = random.choice(state_name)
@@ -45,4 +45,4 @@ def generate_dummy_info(record_count):
 if __name__ == '__main__':
     record_count = 5000
     df = pd.DataFrame(generate_dummy_info(record_count), columns = ['quote_id','snapshot_time','first_name','last_name','state','gender','zip_cd','quote_type','existing_customer','sales_channel','vehicle_size','offer_applied','quote_ammount','dataset_date'])
-    df.to_csv('C:/Users/Public/QfinalProject/project_data_quotes.csv', index = False)
+    df.to_csv('C:/Users/Public/QfinalProject/project_data_quotesNew.csv', index = False)
