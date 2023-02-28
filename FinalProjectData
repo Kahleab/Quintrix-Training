@@ -2,17 +2,25 @@ import pandas as pd
 import random
 import datetime
 
-def random_date(start : datetime, end : datetime):
-    diff = datetime.timedelta(days=(end - start).days)
-    rae = random.random() * diff
-    return start + datetime.timedelta(days = rae.days)
+import random
+import datetime
+
+def random_date(start_date, end_date):
+    time_between_dates = end_date - start_date
+    days_between_dates = time_between_dates.days
+    random_number_of_days = random.randrange(days_between_dates)
+    random_date = start_date + datetime.timedelta(days=random_number_of_days)
+    random_time = datetime.time(hour=random.randrange(24), minute=random.randrange(60), second=random.randrange(60))
+    return datetime.datetime.combine(random_date, random_time)
+
 
 
 def generate_dummy_info(record_count):
     print(record_count)
     ran_data = []
     start_date = datetime.datetime(2023, 2, 1)
-    end_date = datetime.datetime(2023, 2, 20)
+    end_date = datetime.datetime(2023, 3, 30)
+    random_datetime = random_date(start_date, end_date)
     f_name_cho = ['April','May','John','Chris','Edd','Tom','Sarah','Chris','Matt','Tim','Kelly','Kim','Betty','Cassie','Ray','Finn','Poe','Peter','Bruce','Clark']
     
     l_name_cho = ['Parker','Banner','Wayne','Kent','Williams','Hill','Hall','Matthew','Johnson','Jackson','Carter','Lee','Powers','Trent','James','Cole','Edwards']
@@ -24,7 +32,7 @@ def generate_dummy_info(record_count):
 
     for i in range(0, record_count):
         quote_id = (random.randint(100000,999999))
-        snapshot_time = (random_date(start_date,end_date))
+        snapshot_time = (random_datetime)
         first_name = random.choice(f_name_cho)
         last_name = random.choice(l_name_cho)
         state = random.choice(state_name)
@@ -45,4 +53,4 @@ def generate_dummy_info(record_count):
 if __name__ == '__main__':
     record_count = 5000
     df = pd.DataFrame(generate_dummy_info(record_count), columns = ['quote_id','snapshot_time','first_name','last_name','state','gender','zip_cd','quote_type','existing_customer','sales_channel','vehicle_size','offer_applied','quote_ammount','dataset_date'])
-    df.to_csv('C:/Users/Public/QfinalProject/project_data_quotesNew.csv', index = False)
+    df.to_csv('C:/Users/Public/QfinalProject/final_project_data_quotes.csv', index = False)
