@@ -1,53 +1,137 @@
+import names
 import pandas as pd
+import numpy as np
 import random
 import datetime
-
-import random
-import datetime
-
-def random_date(start : datetime, end : datetime):
-    diff = datetime.timedelta(days=(end - start).days)
-    rae = random.random() * diff
-    return start + datetime.timedelta(days = rae.days)
+from datetime import datetime, timedelta
+import os
+import timeit
 
 
+states = {
+    'AK': 'Alaska',
+    'AL': 'Alabama',
+    'AR': 'Arkansas',
+    'AZ': 'Arizona',
+    'CA': 'California',
+    'CO': 'Colorado',
+    'CT': 'Connecticut',
+    'DC': 'District of Columbia',
+    'DE': 'Delaware',
+    'FL': 'Florida',
+    'GA': 'Georgia',
+    'HI': 'Hawaii',
+    'IA': 'Iowa',
+    'ID': 'Idaho',
+    'IL': 'Illinois',
+    'IN': 'Indiana',
+    'KS': 'Kansas',
+    'KY': 'Kentucky',
+    'LA': 'Louisiana',
+    'MA': 'Massachusetts',
+    'MD': 'Maryland',
+    'ME': 'Maine',
+    'MI': 'Michigan',
+    'MN': 'Minnesota',
+    'MO': 'Missouri',
+    'MS': 'Mississippi',
+    'MT': 'Montana',
+    'NC': 'North Carolina',
+    'ND': 'North Dakota',
+    'NE': 'Nebraska',
+    'NH': 'New Hampshire',
+    'NJ': 'New Jersey',
+    'NM': 'New Mexico',
+    'NV': 'Nevada',
+    'NY': 'New York',
+    'OH': 'Ohio',
+    'OK': 'Oklahoma',
+    'OR': 'Oregon',
+    'PA': 'Pennsylvania',
+    'RI': 'Rhode Island',
+    'SC': 'South Carolina',
+    'SD': 'South Dakota',
+    'TN': 'Tennessee',
+    'TX': 'Texas',
+    'UT': 'Utah',
+    'VA': 'Virginia',
+    'VT': 'Vermont',
+    'WA': 'Washington',
+    'WI': 'Wisconsin',
+    'WV': 'West Virginia',
+    'WY': 'Wyoming'
+}
+
+gender = ['M', 'F']
+
+quote_types = ['Liability', 'Collision', 'Comprehensive', 'Gap Insurance', 'Medical Payments Coverage',
+              'Classic Car Insurance']
+
+existing_customer = ['Y', 'N']
+
+sales_channels = ['Agent', 'Call Center', 'Web']
+
+vehicle_classes = {'small': ['Convertible', 'Coupe', 'Sedan', 'Hatchback'],
+                 'medium': ['SUV/Crossover', 'Wagon'],
+                 'large': ['Truck', 'Van/minivan']
+                 }
+
+offer_applied = ['Y', 'N']
+
+table_columns = ['quote_id', 'first_name', 'last_name', 'state', 'gender', 'zip_cd', 'quote_type', 'existing_customer',
+                 'sales_channel', 'vehicle_class', 'vehicle_size', 'offer_applied', 'quote_amount', 'dataset_date']
+
+def main():
+    start_date = '2023-02-26 00:00:00'
+    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S')
+
+    for i in range(5):
+        current_timestamp = start_date_obj + timedelta(days=i)
+        current_date = start_date_obj.date() + timedelta(days=i)
+        
+        file_dir = f"Data/dataset_date={current_date}"
+
+        print(f"Creating Directory {file_dir}")
+        os.mkdir(file_dir)
+        
+        column_data = []
+        print(f"Creating Records for date: {current_date}")
+        chance_of_outlier = .03
+        if (random.random() < chance_of_outlier):
+            range_num = random.randint(15000,25000)
+        else:
+            range_num = random.randint(4000,6000)
+        for j in range(range_num):
+            quote_id = f"{random.randint(100000, 999999)}_{current_date}"
+            snapshot_time = current_timestamp + timedelta(hours=random.randrange(23),minutes=random.randrange(59), seconds=random.randrange(59))
+            sex = random.choice(gender)
+            first_name = names.get_first_name(gender='male' if sex == 'M' else 'female')
+            last_name = names.get_last_name()
+            state = random.choice(list(states.values()))
+            zip_cd = random.randint(10000, 99999)
+            quote_type = random.choice(quote_types)
+            existing_cust = random.choice(random.choices(existing_customer, weights=(20, 75), k=2))
+            sales_channel = random.choice(sales_channels)
+            vehicle_size = random.choice(list(vehicle_classes.keys()))
+            vehicle_class = random.choice(vehicle_classes[vehicle_size])
+            apply_offer = random.choice(offer_applied)
+            quote_amount = round(random.uniform(50.11, 999.99), 2)
+            
+
+            column_data.append((quote_id, snapshot_time, first_name, last_name, state, sex, zip_cd, quote_type,
+                                existing_cust, sales_channel, vehicle_class, vehicle_size, apply_offer, quote_amount))
+
+        dataframe = pd.DataFrame(column_data, columns=['quote_id', 'snapshot_time', 'first_name', 'last_name', 'state',
+                                                       'gender', 'zip_cd', 'quote_type', 'existing_customer',
+                                                       'sales_channel', 'vehicle_class', 'vehicle_size',
+                                                       'offer_applied', 'quote_amount'])
+
+        dataframe.to_csv(f"{file_dir}/quote_id_{current_date}.csv", index=False)
+        print(f"Finished Creating {file_dir}/quote_data_{current_date}.csv")
+        print(f"Total records created: {len(column_data)}\n")
 
 
-def generate_dummy_info(record_count):
-    print(record_count)
-    ran_data = []
-    start_date = datetime.datetime(2023, 1, 1)
-    end_date = datetime.datetime(2023, 12, 30)
-    f_name_cho = ['April','May','John','Chris','Edd','Tom','Sarah','Chris','Matt','Tim','Kelly','Kim','Betty','Cassie','Ray','Finn','Poe','Peter','Bruce','Clark']
-    
-    l_name_cho = ['Parker','Banner','Wayne','Kent','Williams','Hill','Hall','Matthew','Johnson','Jackson','Carter','Lee','Powers','Trent','James','Cole','Edwards']
-    
-    state_name = ['Alabama','Alaska','Arizona','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas',
-    'Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey',
-    'New Mexico','New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma','Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina','South Dakota','Tennessee',
-    'Texas', 'Utah', 'Vermont','Virgina','Washingtion','West Virginia','Wisconsin','Wyoming']
-
-    for i in range(0, record_count):
-        quote_id = (random.randint(100000,999999))
-        snapshot_time = (random_date(start_date,end_date))
-        first_name = random.choice(f_name_cho)
-        last_name = random.choice(l_name_cho)
-        state = random.choice(state_name)
-        gender = random.choice(['M','F'])
-        zip_cd = (random.randint(10000,99999))
-        quote_type = random.choice(['Auto', 'Non-Auto'])
-        existing_customer = random.choice(['Y','N'])
-        sales_channel = random.choice(['SUV','Four-Door Car','Two-Door Car'])
-        vehicle_size = random.choice(['Medsize','Small','Large'])
-        offer_applied = random.choice(['Y','N'])
-        quote_ammount = (random.randint(100,999))
-        dataset_date = snapshot_time
-
-        ran_data.append((quote_id,snapshot_time,first_name,last_name,state,gender,zip_cd,quote_type,existing_customer,sales_channel,vehicle_size,offer_applied,quote_ammount,dataset_date))
-
-    return ran_data
-
-if __name__ == '__main__':
-    record_count = 5000
-    df = pd.DataFrame(generate_dummy_info(record_count), columns = ['quote_id','snapshot_time','first_name','last_name','state','gender','zip_cd','quote_type','existing_customer','sales_channel','vehicle_size','offer_applied','quote_ammount','dataset_date'])
-    df.to_csv('C:/Users/Public/QfinalProject/new_final_project_data_quotes.csv', index = False)
+starttime = timeit.default_timer()
+main()
+endtime = timeit.default_timer()
+print(f"Script finished in : {(endtime - starttime):.3f} Seconds")
