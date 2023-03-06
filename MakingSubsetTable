@@ -1,0 +1,78 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+import random
+from pyspark.sql.functions import lit
+import datetime
+from datetime import datetime, time
+from pyspark.sql import functions as F
+from pyspark.sql.functions import date_add 
+from pyspark.sql.functions import rand
+from pyspark.sql.types import IntegerType
+from pyspark.sql.types import StringType
+
+
+## @params: [JOB_NAME]
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+job.commit()
+
+#take only columns we need
+df = spark.sql("""SELECT quote_id,first_name,last_name,state,gender,zip_cd,quote_type,existing_customer,offer_applied,quote_amount,dataset_date FROM caspian_src.quotes WHERE existing_customer = 'Y' """)
+df2 = spark.sql("""SELECT quote_id,first_name,last_name,state,gender,zip_cd,quote_type,existing_customer,offer_applied,quote_amount,dataset_date FROM caspian_src.quotes WHERE existing_customer = 'N' """)
+
+# take only 30 percent of not existing customers to convert into policy holders and perform union
+df2 = df2.sample(.3)
+unionDF = df.unionAll(df2)
+
+#The quote amount given is for 12 months, so the premium will be the quote amount divided by 12 
+unionDF = unionDF.withColumn("monthly_premium",((df.quote_amount.cast("float")/12)))
+
+#policy types and quote types contain the same data, so this column is renamed
+unionDF = unionDF.withColumnRenamed("quote_type","policy_type")
+
+#a policy will start some n number of days after the quote is processed
+unionDF = unionDF.withColumn("policy_start_date", date_add(unionDF.dataset_date, random.randrange(31)))
+
+#create policy end date by adding 1 year to when the policy starts
+unionDF = unionDF.withColumn("policy_end_date", date_add(unionDF.policy_start_date, 365))
+
+def addPolicyCustomerID(x):
+    pol_id = f"{random.randint(100000,999999)}_{x.dataset_date}"
+    cust_id = f"{random.randint(100000,999999)}"
+    return (pol_id,cust_id)
+
+    
+pol_df = unionDF.select('dataset_date')
+policy_rdd = pol_df.rdd.map(lambda x : addPolicyCustomerID(x))
+policydf = policy_rdd.toDF(['pol_id','cust_id'])
+
+policydf.show(20)
+policydf.count()
+unionDF.count()
+#unionDF = unionDF.withColumn("policy_id", policydf.pol_id)
+#unionDF = unionDF.withColumn('customer_id', policydf.cust_id)
+
+#When a customer is an existing customer, their policy will be renewed, if they are not an existing customer, they have a new policy
+unionDF = unionDF.withColumn("policy_status", F.when(unionDF.existing_customer == "Y", "Renew")
+                                             .when(unionDF.existing_customer == "N", "New"))
+
+#we no longer need this column
+unionDF = unionDF.drop("existing_customer")
+
+#unionDF = unionDF.select('policy_id', 'policy_status', 'customer_id', 'first_name', 'last_name', 'state', 'gender', 'zip_cd', 'policy_type', 'monthly_premium',
+#                        'offer_applied', 'policy_start_date', 'policy_end_date', 'quote_id', 'dataset_date')
+
+
+unionDF.show(10)
+#unionDF.write.option('header', True).partitionBy("dataset_date").mode("overwrite").csv("s3://caspian-raw/policies/")
+
+
